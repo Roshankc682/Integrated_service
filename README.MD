@@ -14,6 +14,6 @@ This is for test only
       cp sample.env .env
       cd Integrated_service
    ```
-3. ``` git clone https://github.com/naxa-developers/core_auth.git```
-4. ```git clone https://github.com/Roshankc682/Risk_Communication.git  ```
-3. ``` docker-compose up --build ```
+3. ```git clone https://github.com/naxa-developers/core_auth.git```
+4. ```git clone https://github.com/Roshankc682/Risk_Communication.git ```
+3. ```docker-compose up --build```
