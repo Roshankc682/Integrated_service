@@ -1,0 +1,162 @@
+# services:
+#   db:
+#     image: postgres:15
+#     container_name: postgres_db
+#     environment:
+#       POSTGRES_DB: core_auth_db
+#       POSTGRES_USER: core_auth_user
+#       POSTGRES_PASSWORD: your_password
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#     networks:
+#       - app_network
+
+#   redis:
+#     image: redis:alpine
+#     networks:
+#       - app_network
+
+#   core_auth:
+#     build:
+#       context: ./core_auth
+#     command: ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+#     volumes:
+#       - ./core_auth:/app
+#     ports:
+#       - "8002:8000"
+#     depends_on:
+#       - db
+#       - redis
+#     environment:
+#       - DB_HOST=db
+#       - DB_PORT=5432
+#       - DB_NAME=core_auth_db
+#       - DB_USER=core_auth_user
+#       - DB_PASSWORD=your_password
+#     networks:
+#       - app_network
+
+#   risk_communication:
+#     build:
+#       context: ./risk_communication
+#     command: ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8001"]
+#     volumes:
+#       - ./risk_communication:/app
+#     ports:
+#       - "8001:8000"
+#     depends_on:
+#       - db
+#       - redis
+#     environment:
+#       - DB_HOST=db
+#       - DB_PORT=5432
+#       - DB_NAME=risk_communication_db
+#       - DB_USER=core_auth_user
+#       - DB_PASSWORD=your_password
+#     networks:
+#       - app_network
+
+#   celery_worker:
+#     image: celery:latest
+#     container_name: celery_worker
+#     restart: always
+#     depends_on:
+#       - redis
+#     environment:
+#       REDIS_URL: redis://redis:6379/0  # shared Redis URL
+#     networks:
+#       - app_network
+
+# networks:
+#   app_network:
+#     driver: bridge
+
+# volumes:
+#   postgres_data:
+
+
+
+services:
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+  redis:
+    image: redis:alpine
+    networks:
+      - app_network
+
+  core_auth:
+    build:
+      context: ./core_auth
+    command: ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+    volumes:
+      - ./core_auth:/app
+    ports:
+      - "8002:8000"
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+    networks:
+      - app_network
+
+  risk_communication:
+    build:
+      context: ./risk_communication
+    command: ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+    # entrypoint: "tail -f /dev/null"
+    volumes:
+      - ./risk_communication:/app
+    ports:
+      - "8001:8000"
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${RISK_COMM_DB}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+    networks:
+      - app_network
+
+  celery_worker:
+    image: celery:latest
+    container_name: celery_worker
+    restart: always
+    depends_on:
+      - redis
+    env_file:
+      - .env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
