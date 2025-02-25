@@ -7,10 +7,11 @@
 - Python 3.8+ installed (for manual setup)
 
 ### Using Docker
+This is for test only
 
 1. Clone the repository:
-   ```sh
-   git clone repo_link
+   cp sample.env .env
    cd Integrated_service
-2. cp sample.env .env
+3. git clone https://github.com/naxa-developers/core_auth.git
+4. git clone https://github.com/Roshankc682/Risk_Communication.git  
 3. docker-compose up --build
